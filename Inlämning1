@@ -1,0 +1,182 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Oct  2 09:25:31 2024
+
+@author: Dahni Strauss
+
+Title: Inlämning 1
+"""
+"""
+Projekt 4: Black Jack
+Skapa ett program som simulerar ett blackjack-spel mellan en spelare och en dator.
+·         Spelet spelas med en vanlig kortlek som blandas innan varje runda.
+·         Varje spelare får två kort i början av spelet. Datorn visar bara upp ett av sina kort.
+·         Spelaren kan välja att ta fler kort (hit) eller stanna på sina nuvarande kort (stand).
+·         Spelaren kan fortsätta att ta kort tills hen når 21 poäng eller över.
+·         Om spelaren går över 21 poäng förlorar hen direkt.
+·         När spelaren stannar, spelar datorn sin tur. Datorn måste ta kort så länge summan av korten är mindre än 17 poäng och stanna när datorns kortsumma är 17 poäng eller mer.
+·         Om datorn går över 21 poäng vinner spelaren oavsett vilka kort spelaren har.
+·         Om varken spelaren eller datorn går över 21 poäng så vinner den som har högst kortsumma."""
+# -----------------------------------------------------------Solution-----------------------------------------------------
+
+# Initializing the Player class
+class Player:
+   def __init__(self,name):
+       self.name = name
+       self.hand = []
+
+   def __str__(self):
+       return f"{self.name}"
+   
+   def show_hand(self):
+       hand_display = ', '.join([str(card) for card in self.hand])
+       return f"Your hand: {hand_display}, Totals: {self.deck_value()}"
+   
+   def reset_hand(self):
+       self.hand = [] # resets the hand to an empty list
+   
+   def draw_card(self,card):
+       self.hand.append(card)
+    
+   def deck_value(self):
+       total_value = 0 
+       for card in self.hand:
+           total_value += card.rank
+       return total_value
+   
+# Initializing the Computer class
+class Computer:
+    def __init__(self):
+        self.name = "computer"
+        self.hand = []
+          
+    def draw_card(self,card):
+        self.hand.append(card)
+    
+    def reset_hand(self):
+        self.hand = []
+     
+    def deck_value(self):
+        total_value = 0 
+        for card in self.hand:
+            total_value += card.rank
+        return total_value
+    
+# Initializing the Card class
+class Card:
+    def __init__(self,rank,suit):
+        self.rank = rank
+        self.suit = suit
+    
+    def __str__(self):
+        return f"{self.rank} of {self.suit}"
+    
+# Initializing the Deck class
+class Deck:
+    suits = ["Hearts", "Spades", "Clubs", "Diamonds"]
+    rank = [1,2,3,4,5,6,7,8,9,10]
+    
+    def __init__(self):
+        self.cards = [Card(rank,suit) for suit in self.suits for rank in self.rank]
+    
+    def __str__(self):
+        return f"{self.rank} of {self.suit}"
+    
+    def shuffle(self):
+        random.shuffle(self.cards) #Shuffle the deck
+        
+    def deal_card(self):
+        return self.cards.pop() # Draws the top card from the deck
+    
+    def first_round(self, player,computer):
+            # The player draws two cards
+            player.draw_card(self.deal_card())
+            player.draw_card(self.deal_card()) 
+            print(player.show_hand())
+            
+            # The computer draws two cards
+            computer.draw_card(self.deal_card())
+            last_card = self.deal_card()
+            computer.draw_card(last_card)
+            print(f"Computer's last card: {last_card}")
+            return last_card # Returns the last card the computer drew.
+    
+    def next_round(self, player, computer):
+        # The players turn
+        print("\n --- Now Its Your Turn ---")
+        while True:
+            HoS = input("Hit me or Stand? ").lower()
+            
+            if HoS == "hit me" and player.deck_value() <21:
+               player.draw_card(self.deal_card())
+               print(f"\n{player.show_hand()}")
+                      
+               # Check if player goes beyond 21
+               if player.deck_value() >21:
+                    print(f"\n***Busted! You loose with a total of {player.deck_value()}, ***")
+                    return "player_busted"
+            # If standing the loop breaks.
+            elif HoS == "stand":
+                break 
+            
+            else:
+                break       
+        
+        # The computers turn
+        print("\n--- Computer´s Turn ---")
+        while computer.deck_value() <17:
+            computer.draw_card(self.deal_card())  
+            print(f"The computer drew one card")
+            
+        if computer.deck_value() >21:
+            print(f"\n*** Computer busted with {computer.deck_value()} you win!! :)***")
+            return "computer_busted"
+    
+        return "continue"
+    
+    def showdown(self, player, computer):
+        print("\n ------- You have entered the final showdown! ---------")
+        pdv = player.deck_value()
+        cdv = computer.deck_value()
+        if pdv > cdv:
+            print(f"Congratulations {player.name}, you win with {pdv} against the computers {cdv}!!!!!")
+        elif pdv < cdv:
+            print(f"Your cards are: {pdv}, The computer had better cards than you:, {cdv}, you loose")
+        else:
+            print(f"Its a tie {player.name}, {pdv}, {computer.name}, {cdv}, but the house always win so you loose.")
+
+
+def BlackJack():
+    #This function plays through a whole blackjack game.
+    
+    # Initializing the computer
+    computer = Computer()
+    # Initializing the player
+    player = Player(input("Hello Good Sir! Welcome To This Casino, Please Enter Your Name"))
+    
+    while True:
+        # Instantiates the Deck
+        deck = Deck()
+        # Shuffles the Deck
+        deck.shuffle()
+        # Resets the hand before starting the game
+        player.reset_hand()
+        computer.reset_hand()
+        # Plays the first round
+        deck.first_round(player,computer)
+        # Plays the next round
+        result = deck.next_round(player,computer)
+        if result == "player_busted" or result == "computer_busted":
+            return # Exit the game
+        # Plays the Showdown
+        deck.showdown(player,computer)
+        # Next game checker
+        next_game = input("\n***Do you wish to play another game?***")
+        if next_game.lower() == "yes":
+            continue
+        else:
+            break
+        
+
+
+BlackJack()
